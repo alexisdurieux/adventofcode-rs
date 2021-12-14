@@ -72,5 +72,8 @@ if __name__ == '__main__':
     part1_solution = solve_part_1(inputs, outputs)
     print(part1_solution)
 
+    import time
+    tic = time.perf_counter()
     part2_solution = sum([solve_line(digits, res) for digits, res in zip(inputs, outputs)])
-    print(part2_solution)
+    toc = time.perf_counter()
+    print(part2_solution, f"{toc - tic} seconds")

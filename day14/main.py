@@ -1,5 +1,6 @@
 from collections import Counter, defaultdict
 from typing import Tuple, Dict, List, Set
+from copy import deepcopy
 
 Pair = Tuple[str, str]
 
@@ -22,6 +23,7 @@ def load(filename: str) -> Tuple[List[str], Dict[Pair, Set[int]], Dict[Pair, str
     return sequence, index, pairs
 
 
+# Naive
 def solve_part_1(sequence: str, index: Dict[Pair, Set[int]], pairs: Dict[Pair, str], steps: int = 10) -> int:
     def insert(s: str, i: int, c: str) -> str:
         return s[:i] + [c] + s[i:]
@@ -41,8 +43,27 @@ def solve_part_1(sequence: str, index: Dict[Pair, Set[int]], pairs: Dict[Pair, s
     most_commons = Counter(sequence).most_common()
     return most_commons[0][1] - most_commons[-1][1]
 
+
+def solve_part_2(sequence: str, pairs_insertion: Dict[Pair, str], steps: int) -> int:
+    pairs_count = Counter()
+    for i in range(len(sequence) - 1):
+        pairs_count[(sequence[i], sequence[i + 1])] += 1
+    for _ in range(steps):
+        insertions = set([key for key, val in pairs_count.items() if val > 0]).intersection(set(pairs_insertion.keys()))
+        pairs_count_copy = deepcopy(pairs_count)
+        for insertion in insertions:
+            pairs_count[(insertion[0], pairs_insertion[insertion])] += pairs_count_copy[insertion]
+            pairs_count[(pairs_insertion[insertion], insertion[1])] += pairs_count_copy[insertion]
+            pairs_count[insertion] -= pairs_count_copy[insertion]
+    res_counter = Counter()
+    for pair, count in pairs_count.items():
+        res_counter[pair[0]] += count
+        res_counter[pair[1]] += count
+    most_commons = res_counter.most_common()
+    return most_commons[0][1] // 2 - most_commons[-1][1] // 2 + 1
+
 if __name__ == "__main__":
     sequence, index, insertion_pairs = load("input.txt")
 
-    res = solve_part_1(sequence, index, insertion_pairs, 40)
+    res = solve_part_2(sequence, insertion_pairs, 40)
     print(res)
